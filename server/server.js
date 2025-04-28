@@ -5,23 +5,32 @@ const cors = require('cors');
 const { sendVerificationEmail, sendPasswordResetEmail, verifyCode } = require('./email');
 
 const app = express();
-app.use(cors());
+
+// Configure CORS for both REST API and Socket.IO
+const corsOptions = {
+    // Replace with your frontend domain in production
+    origin: process.env.NODE_ENV === 'production' 
+        ? ['https://your-frontend-domain.com']
+        : ['http://localhost:3000', 'http://127.0.0.1:3000', 'http://localhost:5500'],
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
+    credentials: true
+};
+
+app.use(cors(corsOptions));
 app.use(express.json());
 
 const server = http.createServer(app);
 const io = socketIo(server, {
-    cors: {
-        origin: "*",
-        methods: ["GET", "POST"]
-    }
+    cors: corsOptions
 });
 
 // Store data in memory
 let teams = [];
 let teamStatuses = {};
 let people = [];
-let users = new Map(); // Store user data
-let pendingVerifications = new Map(); // Store pending registrations
+let users = new Map();
+let pendingVerifications = new Map();
 
 // Auth endpoints
 app.post('/api/register', async (req, res) => {
@@ -109,32 +118,32 @@ app.post('/api/login', (req, res) => {
     }
 });
 
+// Health check endpoint
+app.get('/health', (req, res) => {
+    res.json({ status: 'healthy' });
+});
+
 // Socket.IO event handlers
 io.on('connection', (socket) => {
     console.log('Client connected');
 
-    // Send current data to new clients
     socket.emit('init', { teams, teamStatuses, people });
 
-    // Handle team creation
     socket.on('createTeam', (team) => {
         teams.push(team);
         io.emit('teamCreated', team);
     });
 
-    // Handle team status updates
     socket.on('updateTeamStatus', (data) => {
         teamStatuses[data.teamId] = data.status;
         io.emit('teamStatusUpdated', data);
     });
 
-    // Handle adding new person
     socket.on('addPerson', (person) => {
         people.push(person);
         io.emit('personAdded', person);
     });
 
-    // Handle status updates
     socket.on('updateStatus', (data) => {
         const personIndex = people.findIndex(p => p.id === data.personId);
         if (personIndex !== -1) {
@@ -151,4 +160,5 @@ io.on('connection', (socket) => {
 const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
+    console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
 });

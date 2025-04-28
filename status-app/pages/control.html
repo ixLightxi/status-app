@@ -6,7 +6,6 @@
     <title>Status Control</title>
     <link rel="stylesheet" href="../css/main.css">
     <link rel="stylesheet" href="../css/control-responsive.css">
-    <link rel="stylesheet" href="../css/auth.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
@@ -85,14 +84,8 @@
         </div>
     </div>
 
-    <script src="../js/auth.js"></script>
-    <script>
-        // Check if user is authenticated
-        if (!isAuthenticated()) {
-            window.location.href = '../login.html';
-        }
-    </script>
     <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
-    <script src="../js/control.js"></script>
+    <script type="module" src="../js/control.js"></script>
+    <script type="module" src="../js/auth.js"></script>
 </body>
 </html>

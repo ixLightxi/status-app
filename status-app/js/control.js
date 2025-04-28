@@ -1,5 +1,11 @@
+import config from './config.js';
+
+const { SOCKET_URL } = config;
+
 // Connect to Socket.IO server
-const socket = io('http://localhost:3000');
+const socket = io(SOCKET_URL, {
+    withCredentials: true
+});
 
 // Elements
 const nameInput = document.getElementById('nameInput');
@@ -26,6 +32,15 @@ let teams = [];
 let teamStatuses = {};
 
 // Socket.IO event handlers
+socket.on('connect', () => {
+    console.log('Connected to server');
+});
+
+socket.on('connect_error', (error) => {
+    console.error('Connection error:', error);
+    showFeedback('Connection error. Please check your internet connection.', 'error');
+});
+
 socket.on('init', (data) => {
     teams = data.teams;
     teamStatuses = data.teamStatuses;
@@ -333,3 +348,5 @@ function showFeedback(message, type) {
 
 // Filter by team
 teamFilter.addEventListener('change', updateDeviceControls);
+
+export { updateDeviceControls, updateTeamList, updateTeamStatusList };

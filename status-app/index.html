@@ -10,19 +10,33 @@
 <body>
     <div class="container">
         <h1>Status App</h1>
+        <div id="welcomeMessage"></div>
         <div class="navigation">
             <a href="pages/status.html" class="nav-button">View Status</a>
             <a href="pages/control.html" class="nav-button">Control Panel</a>
             <button id="logoutBtn" class="nav-button">Logout</button>
         </div>
     </div>
-
-    <script src="js/auth.js"></script>
-    <script>
+    <script type="module">
+        import { isAuthenticated } from './js/auth.js';
+        
         // Check if user is authenticated
         if (!isAuthenticated()) {
             window.location.href = 'login.html';
         }
+
+        // Display welcome message
+        const username = localStorage.getItem('username');
+        if (username) {
+            document.getElementById('welcomeMessage').textContent = `Welcome, ${username}!`;
+        }
+
+        // Handle logout
+        document.getElementById('logoutBtn').addEventListener('click', () => {
+            localStorage.removeItem('authenticated');
+            localStorage.removeItem('username');
+            window.location.href = 'login.html';
+        });
     </script>
 </body>
 </html>

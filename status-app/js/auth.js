@@ -1,4 +1,6 @@
-const API_URL = 'http://localhost:3000/api';
+import config from './config.js';
+
+const { API_URL } = config;
 
 // Check if user is authenticated
 function isAuthenticated() {
@@ -14,24 +16,23 @@ async function handleRegister(event) {
     const messageDiv = document.getElementById('message');
 
     try {
-        const response = await fetch(`${API_URL}/register`, {
+        const response = await fetch(`${API_URL}/api/register`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
             },
             body: JSON.stringify({ email, username, password }),
+            credentials: 'include'
         });
 
         const data = await response.json();
 
         if (response.ok) {
-            // Show verification code input
             document.getElementById('registrationForm').style.display = 'none';
             document.getElementById('verificationForm').style.display = 'block';
             messageDiv.textContent = 'Please check your email for verification code';
             messageDiv.className = 'success-message';
             
-            // For testing: Show email preview link
             if (data.previewUrl) {
                 const previewLink = document.createElement('a');
                 previewLink.href = data.previewUrl;
@@ -58,12 +59,13 @@ async function handleVerification(event) {
     const messageDiv = document.getElementById('message');
 
     try {
-        const response = await fetch(`${API_URL}/verify`, {
+        const response = await fetch(`${API_URL}/api/verify`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
             },
             body: JSON.stringify({ email, code }),
+            credentials: 'include'
         });
 
         const data = await response.json();
@@ -92,12 +94,13 @@ async function handleLogin(event) {
     const messageDiv = document.getElementById('message');
 
     try {
-        const response = await fetch(`${API_URL}/login`, {
+        const response = await fetch(`${API_URL}/api/login`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
             },
             body: JSON.stringify({ email, password }),
+            credentials: 'include'
         });
 
         const data = await response.json();
@@ -123,12 +126,13 @@ async function handleForgotPassword(event) {
     const messageDiv = document.getElementById('message');
 
     try {
-        const response = await fetch(`${API_URL}/forgot-password`, {
+        const response = await fetch(`${API_URL}/api/forgot-password`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
             },
             body: JSON.stringify({ email }),
+            credentials: 'include'
         });
 
         const data = await response.json();
@@ -139,7 +143,6 @@ async function handleForgotPassword(event) {
             messageDiv.textContent = 'Please check your email for the reset code';
             messageDiv.className = 'success-message';
             
-            // For testing: Show email preview link
             if (data.previewUrl) {
                 const previewLink = document.createElement('a');
                 previewLink.href = data.previewUrl;
@@ -167,12 +170,13 @@ async function handleResetPassword(event) {
     const messageDiv = document.getElementById('message');
 
     try {
-        const response = await fetch(`${API_URL}/reset-password`, {
+        const response = await fetch(`${API_URL}/api/reset-password`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
             },
             body: JSON.stringify({ email, code, newPassword }),
+            credentials: 'include'
         });
 
         const data = await response.json();
@@ -228,3 +232,5 @@ document.addEventListener('DOMContentLoaded', () => {
         logoutBtn.addEventListener('click', handleLogout);
     }
 });
+
+export { isAuthenticated };

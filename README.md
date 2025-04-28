@@ -1,64 +1,123 @@
-# Status App Auto-Start Setup
+# Status App
 
-This repository contains scripts to set up auto-start for the Status App on different operating systems.
+A real-time status tracking application with authentication and team management features.
 
-## Windows Setup
+## Setup for Different Domains
 
-1. Download `launch-status-app.bat` and `setup-autostart.ps1`
-2. Right-click on `setup-autostart.ps1` and select "Run with PowerShell"
-3. The script will automatically install the auto-start configuration
+### Frontend Setup
 
-To remove auto-start:
-1. Press Windows + R
-2. Type "shell:startup"
-3. Delete the "launch-status-app.bat" file
-
-## macOS Setup
-
-1. Download `setup-macos.sh`
-2. Open Terminal
-3. Navigate to the download directory
-4. Run these commands:
-   ```bash
-   chmod +x setup-macos.sh
-   ./setup-macos.sh
+1. Update the configuration in `status-app/js/config.js`:
+   ```javascript
+   const config = {
+       production: {
+           API_URL: 'https://your-backend-domain.com',  // Replace with your backend domain
+           SOCKET_URL: 'wss://your-backend-domain.com'  // Replace with your backend WebSocket URL
+       }
+   };
    ```
 
-To remove auto-start:
-```bash
-launchctl unload ~/Library/LaunchAgents/com.statusapp.startup.plist
-rm ~/Library/LaunchAgents/com.statusapp.startup.plist
-```
+2. Deploy the frontend files:
+   - Upload all files from the `status-app` directory to your web server
+   - Configure your web server to serve `index.html` as the default page
+   - Ensure all routes redirect to `index.html` for client-side routing
 
-## Linux Setup
+### Backend Setup
 
-1. Download `setup-linux.sh`
-2. Open Terminal
-3. Navigate to the download directory
-4. Run these commands:
-   ```bash
-   chmod +x setup-linux.sh
-   ./setup-linux.sh
+1. Update CORS configuration in `server/server.js`:
+   ```javascript
+   const corsOptions = {
+       origin: ['https://your-frontend-domain.com'],  // Replace with your frontend domain
+       methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+       allowedHeaders: ['Content-Type', 'Authorization'],
+       credentials: true
+   };
    ```
 
-To remove auto-start:
-```bash
-rm ~/.config/autostart/status-app.desktop
-```
+2. Set up the backend server:
+   ```bash
+   cd server
+   npm install
+   npm start
+   ```
 
-## About the Status App
+3. Environment Variables:
+   Create a `.env` file in the server directory:
+   ```
+   PORT=3000
+   NODE_ENV=production
+   FRONTEND_URL=https://your-frontend-domain.com
+   ```
 
-The Status App will open automatically in your default browser when you start your computer. You can access it anytime at:
+### Security Considerations
 
-https://ixlightxi.github.io/status-app/
+1. SSL/TLS:
+   - Both frontend and backend should use HTTPS
+   - WebSocket connections should use WSS
 
-You can also create a new account using an @devinci.fr email address.
+2. CORS:
+   - Configure CORS to only allow requests from your frontend domain
+   - Enable credentials for cross-domain requests
 
-## Troubleshooting
+3. Authentication:
+   - Default admin credentials:
+     - Username: admin
+     - Password: 1234
+   - Change these credentials after first login
+   - Enable password reset functionality
 
-If the app doesn't open automatically:
+### Development Setup
 
-1. Check if your internet connection is working
-2. Try accessing the URL manually: https://ixlightxi.github.io/status-app/
-3. Make sure the startup script is properly installed for your operating system
-4. Check if your browser's default settings haven't been changed
+1. Local frontend development:
+   ```bash
+   cd status-app
+   # Use any static file server
+   python -m http.server 5500
+   ```
+
+2. Local backend development:
+   ```bash
+   cd server
+   npm install
+   npm run dev
+   ```
+
+3. Development configuration is automatically used when running on localhost
+
+### Testing
+
+1. Access the application:
+   - Production: https://your-frontend-domain.com
+   - Development: http://localhost:5500
+
+2. Test authentication:
+   - Register a new account
+   - Verify email (check console for test email links)
+   - Login with credentials
+   - Test password reset
+
+3. Test real-time features:
+   - Create teams
+   - Update team status
+   - Add team members
+   - Update individual status
+
+### Troubleshooting
+
+1. CORS Issues:
+   - Verify CORS configuration matches your domains
+   - Check browser console for CORS errors
+   - Ensure credentials are properly configured
+
+2. WebSocket Connection:
+   - Verify WebSocket URL in config matches backend
+   - Check for SSL/TLS certificate issues
+   - Monitor browser console for connection errors
+
+3. Authentication Issues:
+   - Clear browser storage
+   - Check network requests in browser dev tools
+   - Verify API endpoints are accessible
+
+### Support
+
+For issues and feature requests, please create an issue in the repository.

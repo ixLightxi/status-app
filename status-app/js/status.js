@@ -1,5 +1,11 @@
+import config from './config.js';
+
+const { SOCKET_URL } = config;
+
 // Connect to Socket.IO server
-const socket = io('http://localhost:3000');
+const socket = io(SOCKET_URL, {
+    withCredentials: true
+});
 
 // Elements
 const teamFilter = document.getElementById('teamFilter');
@@ -16,6 +22,19 @@ let teamStatuses = {};
 let devices = {};
 
 // Socket.IO event handlers
+socket.on('connect', () => {
+    console.log('Connected to server');
+});
+
+socket.on('connect_error', (error) => {
+    console.error('Connection error:', error);
+    const messageDiv = document.createElement('div');
+    messageDiv.className = 'error-message';
+    messageDiv.textContent = 'Connection error. Please check your internet connection.';
+    document.querySelector('.container').prepend(messageDiv);
+    setTimeout(() => messageDiv.remove(), 3000);
+});
+
 socket.on('init', (data) => {
     teams = data.teams;
     teamStatuses = data.teamStatuses;
@@ -219,3 +238,5 @@ allTeamsView.addEventListener('click', () => {
     myTeamView.classList.remove('active');
     updateStatusDisplay();
 });
+
+export { updateStatusDisplay };
