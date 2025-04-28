@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Status Control</title>
+    <link rel="stylesheet" href="../css/main.css">
+    <link rel="stylesheet" href="../css/control-responsive.css">
+    <link rel="stylesheet" href="../css/auth.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <h1>Status Control Panel</h1>
+        <div class="control-container">
+            <!-- Team Management Section -->
+            <div class="team-control">
+                <h2>Team Management</h2>
+                <div class="input-group">
+                    <input type="text" id="teamInput" placeholder="Enter team name">
+                    <input type="color" id="teamColorInput" value="#1a73e8" title="Choose team color">
+                    <button id="addTeam" class="add-button">Create Team</button>
+                </div>
+                <div id="teamList" class="team-list">
+                    <!-- Teams will be listed here -->
+                </div>
+            </div>
+
+            <!-- Team Status Section -->
+            <div class="team-status-control">
+                <h2>Team Status Management</h2>
+                <div class="input-group">
+                    <select id="teamStatusSelect" class="team-select">
+                        <option value="">Select Team</option>
+                    </select>
+                    <input type="text" id="teamStatusInput" placeholder="Enter team status">
+                    <input type="color" id="teamStatusColor" value="#1a73e8">
+                    <button id="updateTeamStatus" class="add-button">Update Team Status</button>
+                </div>
+                <div id="teamStatusList" class="team-status-list">
+                    <!-- Team statuses will be listed here -->
+                </div>
+            </div>
+
+            <!-- Person Management Section -->
+            <div class="device-control">
+                <h2>Add New Person</h2>
+                <div class="input-group">
+                    <input type="text" id="nameInput" placeholder="Enter name">
+                    <select id="teamSelect" class="team-select">
+                        <option value="">Select Team</option>
+                    </select>
+                    <button id="addDevice" class="add-button">Add Person</button>
+                </div>
+            </div>
+
+            <!-- Status Management Section -->
+            <div class="device-list">
+                <div class="team-filter">
+                    <label>Filter by Team:</label>
+                    <select id="teamFilter" class="team-select">
+                        <option value="">All Teams</option>
+                    </select>
+                </div>
+                <div id="deviceControls" class="device-controls">
+                    <!-- Device controls will be added here dynamically -->
+                </div>
+            </div>
+            <div id="updateFeedback" class="feedback"></div>
+        </div>
+        <div class="navigation">
+            <a href="../index.html" class="nav-button">Back to Home</a>
+            <a href="status.html" class="nav-button">View Status</a>
+            <button id="logoutBtn" class="nav-button">Logout</button>
+        </div>
+    </div>
+
+    <!-- Full Screen Team Status Modal -->
+    <div id="teamStatusModal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal">&times;</span>
+            <div id="fullScreenStatus" class="full-screen-status">
+                <!-- Full screen team status will be displayed here -->
+            </div>
+        </div>
+    </div>
+
+    <script src="../js/auth.js"></script>
+    <script>
+        // Check if user is authenticated
+        if (!isAuthenticated()) {
+            window.location.href = '../login.html';
+        }
+    </script>
+    <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+    <script src="../js/control.js"></script>
+</body>
+</html>
