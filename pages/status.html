@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Status Display</title>
+    <link rel="stylesheet" href="../css/main.css">
+    <link rel="stylesheet" href="../css/status-improved.css">
+    <link rel="stylesheet" href="../css/auth.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Team Status Board</h1>
+            <div class="filter-controls">
+                <div class="filter-group">
+                    <label for="teamFilter">View Team:</label>
+                    <select id="teamFilter" class="filter-select">
+                        <option value="">All Teams</option>
+                    </select>
+                </div>
+                <div class="view-toggle">
+                    <div class="toggle-buttons">
+                        <button id="myTeamView" class="toggle-button active">My Team First</button>
+                        <button id="allTeamsView" class="toggle-button">All Teams</button>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <main class="status-container">
+            <div id="myTeamSection" class="team-group">
+                <!-- My team's statuses will be displayed here -->
+            </div>
+            <div id="otherTeamsSection" class="team-group">
+                <!-- Other teams' statuses will be displayed here -->
+            </div>
+        </main>
+
+        <footer>
+            <nav class="navigation">
+                <a href="../index.html" class="nav-button">Back to Home</a>
+                <a href="control.html" class="nav-button">Control Panel</a>
+                <button id="logoutBtn" class="nav-button">Logout</button>
+            </nav>
+        </footer>
+    </div>
+
+    <style>
+        /* Quick fixes for better typography and spacing */
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f5f7fa;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        header {
+            margin-bottom: 30px;
+        }
+
+        h1 {
+            font-size: 2em;
+            color: #1a73e8;
+            margin-bottom: 20px;
+            font-weight: 600;
+        }
+
+        footer {
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid #e0e0e0;
+        }
+
+        .navigation {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+        }
+
+        .nav-button {
+            padding: 10px 20px;
+            background-color: #1a73e8;
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: 500;
+            transition: background-color 0.2s ease;
+        }
+
+        .nav-button:hover {
+            background-color: #1557b0;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 15px;
+            }
+
+            h1 {
+                font-size: 1.6em;
+                text-align: center;
+            }
+
+            .navigation {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .nav-button {
+                text-align: center;
+            }
+        }
+    </style>
+
+    <script src="../js/auth.js"></script>
+    <script>
+        // Check if user is authenticated
+        if (!isAuthenticated()) {
+            window.location.href = '../login.html';
+        }
+    </script>
+    <script src="../js/status.js"></script>
+</body>
+</html>

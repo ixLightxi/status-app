@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Apprentissage Braille avec ml5.js</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.6.0/p5.js"></script>
+  <script src="https://unpkg.com/ml5@1/dist/ml5.js"></script>
+  <style>
+    body {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+      background-color: #f4f4f4;
+    }
+    canvas {
+      display: block;
+    }
+    #letterDisplay {
+      position: absolute;
+      top: 10px;
+      width: 100%;
+      text-align: center;
+      font-size: 35px;
+    }
+    #successMessage {
+      position: absolute;
+      bottom: 50px;
+      width: 100%;
+      text-align: center;
+      font-size: 30px;
+      color: green;
+    }
+    #errorMessage {
+      position: absolute;
+      bottom: 10px;
+      width: 100%;
+      text-align: center;
+      font-size: 30px;
+      color: red;
+    }
+  </style>
+</head>
+<body>
+  <h1 style="position: absolute; top: 20px; text-align: center;">Apprentissage Braille</h1>
+  <div id="letterDisplay">Lettre Braille: </div>
+  <div id="successMessage"></div>
+  <div id="errorMessage"></div>
+  <script>
+    let brailleDict = {
+      "0": "A", "02": "B", "01": "C", "013": "D", "03": "E",
+      "012": "F", "0123": "G", "023": "H", "12": "I", "123": "J",
+      "04": "K", "024": "L", "014": "M", "0134": "N", "034": "O",
+      "0124": "P", "01234": "Q", "0234": "R", "124": "S", "1234": "T",
+      "045": "U", "0245": "V", "1235": "W", "0145": "X", "01345": "Y", "0345": "Z"
+    };
+
+    let alphabet = Object.keys(brailleDict).sort(); // Ordered Braille keys
+    let currentLetterIndex = 0;
+    let currentKey = alphabet[currentLetterIndex];
+    let currentLetter = brailleDict[currentKey];
+    let handPose, video, hands = [];
+    let brailleCircles = [];
+    let hoveredCircle = -1, timeHovered = 0, startTime = 0;
+    let validatedCircles = [];
+    const radius = 70;
+
+    function preload() {
+      handPose = ml5.handPose();
+    }
+
+    function setup() {
+      let cnv = createCanvas(640, 480);
+      cnv.parent(document.body);
+
+      video = createCapture(VIDEO);
+      video.size(640, 480);
+      video.hide();
+
+      handPose.detectStart(video, gotHands);
+
+      brailleCircles = [
+        { x: width / 2 - radius, y: height / 2 - 2 * radius }, // Top-left circle
+        { x: width / 2 + radius, y: height / 2 - 2 * radius }, // Top-right circle
+        { x: width / 2 - radius, y: height / 2 },             // Middle-left circle
+        { x: width / 2 + radius, y: height / 2 },             // Middle-right circle
+        { x: width / 2 - radius, y: height / 2 + 2 * radius }, // Bottom-left circle
+        { x: width / 2 + radius, y: height / 2 + 2 * radius }, // Bottom-right circle
+        { x: width / 2 - 3.5 * radius, y: height / 2 },   // Reset button (bottom-left)
+        { x: width / 2 + 3.5 * radius, y: height / 2 }    // Validate button (bottom-right)
+      ];
+
+      updateLetterDisplay();
+    }
+
+    function draw() {
+      push();
+      translate(width, 0);
+      scale(-1, 1);
+      image(video, 0, 0, width, height);
+      pop();
+
+      hoveredCircle = -1;
+
+      for (let i = 0; i < hands.length; i++) {
+        let hand = hands[i];
+        let x = 0, y = 0;
+
+        for (let j = 0; j < hand.keypoints.length; j++) {
+          let keypoint = hand.keypoints[j];
+          x = width - keypoint.x; // Flip horizontally
+          y = keypoint.y;
+        }
+
+        // Hand-tracking circle
+        fill(0, 35, 50, 5);
+        stroke(0);
+        strokeWeight(2);
+        circle(x, y, 50);
+
+        for (let k = 0; k < brailleCircles.length; k++) {
+          let pos = brailleCircles[k];
+          if (dist(x, y, pos.x, pos.y) < 40) {
+            hoveredCircle = k;
+            break;
+          }
+        }
+
+        if (hoveredCircle >= 0) {
+          if (startTime === 0) startTime = millis();
+          timeHovered = (millis() - startTime) / 1000;
+
+          if (timeHovered >= 2) {
+            if (hoveredCircle === 6) {
+              resetInputs(); // Reset button functionality
+            } else if (hoveredCircle === 7) {
+              validateBraille(); // Validate button functionality
+            } else if (validatedCircles.includes(hoveredCircle)) {
+              validatedCircles = validatedCircles.filter((v) => v !== hoveredCircle); // Unselect
+            } else {
+              validatedCircles.push(hoveredCircle); // Select
+            }
+            timeHovered = 0;
+            startTime = 0;
+          }
+        } else {
+          startTime = 0;
+        }
+      }
+
+      drawBrailleCircles();
+    }
+
+    function drawBrailleCircles() {
+      for (let i = 0; i < brailleCircles.length; i++) {
+        let pos = brailleCircles[i];
+
+        stroke(0); // Add stroke for better visibility
+        strokeWeight(2);
+
+        if (i === 6) {
+          // Reset button
+          fill(255, 0, 0, 127);
+          rectMode(CENTER);
+          rect(pos.x, pos.y, 80, 80);
+          noStroke();
+          fill(0);
+          textSize(16);
+          textAlign(CENTER, CENTER);
+          text("Réinitialiser", pos.x, pos.y);
+        } else if (i === 7) {
+          // Validate button
+          fill(255, 0, 0, 127);
+          rectMode(CENTER);
+          rect(pos.x, pos.y, 80, 80);
+          noStroke();
+          fill(0);
+          textSize(16);
+          textAlign(CENTER, CENTER);
+          text("Valider", pos.x, pos.y);
+        } else if (validatedCircles.includes(i)) {
+          fill(0, 255, 0, 127); // Green if validated
+          circle(pos.x, pos.y, 80);
+        } else {
+          fill(0, 0, 255, 50); // Blue by default
+          circle(pos.x, pos.y, 80);
+        }
+      }
+    }
+
+    function gotHands(results) {
+      hands = results;
+    }
+
+    function validateBraille() {
+      validatedCircles.sort((a, b) => a - b);
+      let validatedString = validatedCircles.join("");
+      if (validatedString === currentKey) {
+        document.getElementById("successMessage").innerHTML = "Bravo ! Lettre validée !";
+        setTimeout(() => {
+          nextLetter();
+        }, 1500);
+      } else {
+        document.getElementById("errorMessage").innerHTML = "Erreur : Lettre incorrecte. Réessayez.";
+        validatedCircles = [];
+      }
+    }
+
+    function nextLetter() {
+      validatedCircles = [];
+      currentLetterIndex++;
+      if (currentLetterIndex >= alphabet.length) {
+        currentLetterIndex = 0; // Restart from the beginning
+      }
+      currentKey = alphabet[currentLetterIndex];
+      currentLetter = brailleDict[currentKey];
+      updateLetterDisplay();
+      document.getElementById("successMessage").innerHTML = "";
+      document.getElementById("errorMessage").innerHTML = "";
+    }
+
+    function resetInputs() {
+      validatedCircles = [];
+      document.getElementById("successMessage").innerHTML = "";
+      document.getElementById("errorMessage").innerHTML = "";
+    }
+
+    function updateLetterDisplay() {
+      document.getElementById("letterDisplay").innerHTML = `Lettre: ${currentLetter}`;
+    }
+  </script>
+</body>
+</html>

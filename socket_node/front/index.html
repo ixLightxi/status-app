@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    
+
+
+    <script src="https://cdn.socket.io/4.8.1/socket.io.min.js" integrity="sha384-mkQ3/7FUtcGyoppY6bz/PORYoGqOl7/aSUMn2ymDOJcapfS6PHqxhRTMh1RR0Q6+" crossorigin="anonymous"></script>
+    <script>
+        //connect to the server
+        let data = {
+            room: 3,
+            message: 'Hello, World!'
+        }
+        var socket = io('http://localhost:3000');
+        socket.emit('msg', data);
+        //listen for the 'message' event
+        socket.on('message', function(data){
+            console.log(data);
+        });
+    </script>
+</body>
+</html>

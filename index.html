@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Status App</title>
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/auth.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Status App</h1>
+        <div class="navigation">
+            <a href="pages/status.html" class="nav-button">View Status</a>
+            <a href="pages/control.html" class="nav-button">Control Panel</a>
+            <button id="logoutBtn" class="nav-button">Logout</button>
+        </div>
+    </div>
+
+    <script src="js/auth.js"></script>
+    <script>
+        // Check if user is authenticated
+        if (!isAuthenticated()) {
+            window.location.href = 'login.html';
+        }
+    </script>
+</body>
+</html>

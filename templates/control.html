@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Raspberry Pi Control</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='control.css') }}">
+</head>
+<body>
+    <h1>Raspberry Pi Control</h1>
+    <div id="control-container">
+        <div id="room-selection">
+            <label for="room-select">Select Room:</label>
+            <select id="room-select">
+                <option value="room1">Room 1</option>
+                <option value="room2">Room 2</option>
+                <option value="room3">Room 3</option>
+            </select>
+            <button id="confirm-room-btn">Confirm Room</button>
+        </div>
+        <div id="control-buttons">
+            <button id="open-btn">Open</button>
+            <button id="close-btn">Close</button>
+        </div>
+        <p id="status">Status: Unknown</p>
+    </div>
+    <script src="{{ url_for('static', filename='control.js') }}"></script>
+    <script>
+        socket.on('status_update', function(data) {
+            const room = data.room;
+            const status = data.status;
+            document.getElementById('status').innerText = `Status for ${room}: ${status}`;
+        });
+    </script>
+
+    <script>
+        document.getElementById('open-btn').addEventListener('click', function() {
+            const room = document.getElementById('room-select').value;
+            socket.emit('control', { command: 'open', room: room });
+            document.getElementById('status').innerText = `Status for ${room}: Opened`;
+        });
+
+        document.getElementById('close-btn').addEventListener('click', function() {
+            const room = document.getElementById('room-select').value;
+            socket.emit('control', { command: 'close', room: room });
+            document.getElementById('status').innerText = `Status for ${room}: Closed`;
+        });
+    </script>
+</body>
+</html>

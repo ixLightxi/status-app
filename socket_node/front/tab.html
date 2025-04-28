@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <p id="p1">helo jem</p>
+    <script src="https://cdn.socket.io/4.8.1/socket.io.min.js" integrity="sha384-mkQ3/7FUtcGyoppY6bz/PORYoGqOl7/aSUMn2ymDOJcapfS6PHqxhRTMh1RR0Q6+" crossorigin="anonymous"></script>
+    <script>
+        let room = 3
+        //connect to the server
+        var socket = io('http://localhost:3000');
+        //join the room
+        socket.emit('join', room);
+        //listen for the 'message' event
+        socket.on('msg', function(data){
+            console.log(data);
+            //get the p1 element
+            var p1 = document.getElementById("p1");
+            //update the text of the p1 element
+            p1.textContent = data;
+        });
+    </script>
+</body>
+</html>

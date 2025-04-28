@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Status Display</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='status.css') }}">
+</head>
+<body>
+    <div class="room-selection">
+        <label for="room-select">Select Room:</label>
+        <select id="room-select">
+            <option value="room1">Room 1</option>
+            <option value="room2">Room 2</option>
+            <option value="room3">Room 3</option>
+        </select>
+    </div>
+    <div class="status-container">
+        <div class="room-status" id="room1-status">
+            <h2>Room 1</h2>
+            <p>Status: <span class="status-text">Unknown</span></p>
+        </div>
+        <div class="room-status" id="room2-status">
+            <h2>Room 2</h2>
+            <p>Status: <span class="status-text">Unknown</span></p>
+        </div>
+        <div class="room-status" id="room3-status">
+            <h2>Room 3</h2>
+            <p>Status: <span class="status-text">Unknown</span></p>
+        </div>
+    </div>
+    <script src="{{ url_for('static', filename='status.js') }}"></script>
+</body>
+</html>

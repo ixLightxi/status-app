@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Détection Braille avec ml5.js</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.6.0/p5.js"></script>
+  <script src="https://unpkg.com/ml5@1/dist/ml5.js"></script>
+  <style>
+    body {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+      background-color: #f4f4f4;
+    }
+    canvas {
+      display: block;
+    }
+    #letterDisplay {
+      position: absolute;
+      top: 10px;
+      width: 100%;
+      text-align: center;
+      font-size: 35px;
+    }
+    #errorMessage {
+      position: absolute;
+      bottom: 10px;
+      width: 100%;
+      text-align: center;
+      font-size: 30px;
+      color: red;
+    }
+  </style>
+</head>
+<body>
+  <h1 style="position: absolute; top: 20px; text-align: center;">Détection Braille avec ml5.js</h1>
+  <div id="letterDisplay">Lettre Braille: </div>
+  <div id="errorMessage"></div>
+  <script>
+    let brailleDict = {
+      "0": "A",
+      "02": "B",
+      "01": "C",
+      "013": "D",
+      "03": "E",
+      "012": "F",
+      "0123": "G",
+      "023": "H",
+      "12": "I",
+      "123": "J",
+      "04": "K",
+      "024": "L",
+      "014": "M",
+      "0134": "N",
+      "034": "O",
+      "0124": "P",
+      "01234": "Q",
+      "0234": "R",
+      "124": "S",
+      "1234": "T",
+      "045": "U",
+      "0245": "V",
+      "1235": "W",
+      "0145": "X",
+      "01345": "Y",
+      "0345": "Z",
+      "5": " ",
+    };
+
+    let handPose;
+    let video;
+    let hands = [];
+    let brailleCircles = [];
+    let hoveredCircle = -1;
+    let timeHovered = 0;
+    let startTime = 0;
+    let letterBraille = "";
+    let validatedCircles = [];
+    let reset = false;
+    let unselectStartTime = 0;
+
+    function preload() {
+      handPose = ml5.handPose();
+    }
+
+    function setup() {
+      let cnv = createCanvas(640, 480);
+      cnv.parent(document.body);
+
+      video = createCapture(VIDEO);
+      video.size(640, 480);
+      video.hide();
+
+      handPose.detectStart(video, gotHands);
+
+      const radius = 70;
+      brailleCircles = [
+        { x: width / 2 - radius, y: height / 2 - 2 * radius },
+        { x: width / 2 + radius, y: height / 2 - 2 * radius },
+        { x: width / 2 - radius, y: height / 2 },
+        { x: width / 2 + radius, y: height / 2 },
+        { x: width / 2 - radius, y: height / 2 + 2 * radius },
+        { x: width / 2 + radius, y: height / 2 + 2 * radius },
+        { x: width / 2 - 3.5 * radius, y: height / 2 }, // Reset bottom-left
+        { x: width / 2 + 3.5 * radius, y: height / 2 }, // Validation bottom-right
+      ];
+    }
+
+    function draw() {
+      push();
+      translate(width, 0);
+      scale(-1, 1);
+      image(video, 0, 0, width, height);
+      pop();
+
+      for (let i = 0; i < hands.length; i++) {
+        let hand = hands[i];
+        let x = 0;
+        let y = 0;
+        for (let j = 0; j < hand.keypoints.length; j++) {
+          let keypoint = hand.keypoints[j];
+          x = width - keypoint.x;
+          y = keypoint.y;
+        }
+
+        fill(0, 35, 50, 5);
+        stroke(0);
+        strokeWeight(2);
+        circle(x, y, 60);
+
+        hoveredCircle = -1;
+        for (let k = 0; k < brailleCircles.length; k++) {
+          let pos = brailleCircles[k];
+          if (dist(x, y, pos.x, pos.y) < 40) {
+            hoveredCircle = k;
+            break;
+          }
+        }
+
+        if (hoveredCircle >= 0) {
+          if (startTime === 0) {
+            startTime = millis();
+          }
+          timeHovered = (millis() - startTime) / 1000;
+
+          if (timeHovered >= 2) {
+            if (hoveredCircle === 6) {
+              reset = true;
+              letterBraille = "";
+              validatedCircles = [];
+              document.getElementById("letterDisplay").innerHTML = "Lettre Braille:";
+              document.getElementById("errorMessage").innerHTML = ""; // Clear error
+              reset = false;
+              timeHovered = 0;
+              startTime = 0;
+            } else if (hoveredCircle === 7) {
+              if (!validatedCircles.includes(hoveredCircle)) {
+                validatedCircles.sort((a, b) => a - b);
+                let validatedCirclesString = validatedCircles.join("");
+                let lettreactual = brailleDict[validatedCirclesString];
+                if (lettreactual != null) {
+                  updateLetterDisplay(lettreactual);
+                  document.getElementById("errorMessage").innerHTML = ""; // Clear error
+                } else {
+                  document.getElementById("errorMessage").innerHTML = "Erreur: Cette lettre n'existe pas !";
+                }
+                validatedCircles = [];
+                timeHovered = 0;
+                startTime = 0;
+              }
+            } else {
+              if (!validatedCircles.includes(hoveredCircle)) {
+                validatedCircles.push(hoveredCircle);
+                timeHovered = 0;
+                startTime = 0;
+              }
+            }
+          }
+        } else {
+          startTime = 0;
+        }
+      }
+
+      drawBrailleCircles();
+    }
+
+    function drawBrailleCircles() {
+      for (let i = 0; i < brailleCircles.length; i++) {
+        let pos = brailleCircles[i];
+        if (validatedCircles.includes(i)) {
+          fill(0, 255, 0, 127);
+        } else if (i === 6 || i === 7) {
+          fill(255, 0, 0, 127);
+        } else {
+          fill(0, 0, 255, 50);
+        }
+        stroke(0);
+        strokeWeight(2);
+
+        if (i === 6 || i === 7) {
+          rectMode(CENTER);
+          rect(pos.x, pos.y, 80, 80);
+
+          fill(0); // Black text
+          noStroke();
+          textSize(16);
+          textAlign(CENTER, CENTER);
+          text(i === 6 ? "Efface" : "Validate", pos.x, pos.y);
+        } else {
+          circle(pos.x, pos.y, 80);
+        }
+      }
+    }
+
+    function gotHands(results) {
+      hands = results;
+    }
+
+    function updateLetterDisplay(s) {
+      document.getElementById("letterDisplay").innerHTML += s;
+    }
+  </script>
+</body>
+</html>
